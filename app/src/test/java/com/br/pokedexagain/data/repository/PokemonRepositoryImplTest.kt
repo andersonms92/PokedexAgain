@@ -8,6 +8,7 @@ import com.br.pokedexagain.data.remote.dto.PokemonListResponseDto
 import com.br.pokedexagain.data.remote.dto.PokemonLocationEncounterDto
 import com.br.pokedexagain.data.remote.dto.PokemonSpeciesDto
 import com.br.pokedexagain.data.remote.dto.PokemonSpritesDto
+import com.br.pokedexagain.data.remote.dto.PokemonTypeSlotDto
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -40,6 +41,27 @@ class PokemonRepositoryImplTest {
         )
         whenever(apiService.getPokemonList(100, 0)).thenReturn(mockResponse)
 
+        val detail1 = PokemonDetailDto(
+            id = 1,
+            name = "bulbasaur",
+            height = 7,
+            weight = 69,
+            types = listOf(PokemonTypeSlotDto(1, NamedApiResourceDto("grass", ""))),
+            stats = emptyList(),
+            sprites = PokemonSpritesDto(frontDefault = "http://example.com/1.png")
+        )
+        val detail2 = PokemonDetailDto(
+            id = 2,
+            name = "ivysaur",
+            height = 10,
+            weight = 130,
+            types = listOf(PokemonTypeSlotDto(1, NamedApiResourceDto("poison", ""))),
+            stats = emptyList(),
+            sprites = PokemonSpritesDto(frontDefault = "http://example.com/2.png")
+        )
+        whenever(apiService.getPokemonDetail("1")).thenReturn(detail1)
+        whenever(apiService.getPokemonDetail("2")).thenReturn(detail2)
+
         val result = repository.getPokemonList(100, 0)
 
         assertTrue(result.isSuccess)
@@ -47,8 +69,10 @@ class PokemonRepositoryImplTest {
         assertEquals(2, list.size)
         assertEquals(1, list[0].id)
         assertEquals("Bulbasaur", list[0].name)
+        assertEquals(listOf("Grass", "Poison"), list[0].types)
         assertEquals(2, list[1].id)
         assertEquals("Ivysaur", list[1].name)
+        assertEquals(listOf("Grass", "Poison"), list[1].types)
     }
 
     @Test

@@ -216,7 +216,8 @@ fun PokemonDetailScreenContent(
                                                 style = MaterialTheme.typography.headlineMedium.copy(
                                                     fontWeight = FontWeight.Bold,
                                                     color = Color.White
-                                                )
+                                                ),
+                                                modifier = Modifier.weight(1f)
                                             )
                                             Text(
                                                 text = "#${detail.id.toString().padStart(3, '0')}",
@@ -431,19 +432,23 @@ fun PokemonDetailScreenContent(
                                                             RoundedCornerShape(8.dp)
                                                         )
                                                         .padding(horizontal = 12.dp, vertical = 8.dp),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Text(
                                                         text = encounter.formattedLocationName,
                                                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                                        modifier = Modifier.weight(1f)
+                                                        modifier = Modifier.weight(1f),
+                                                        maxLines = 2
                                                     )
                                                     if (encounter.versions.isNotEmpty()) {
                                                         Text(
                                                             text = encounter.versions.joinToString(", ").uppercase(),
                                                             style = MaterialTheme.typography.labelSmall,
-                                                            color = MaterialTheme.colorScheme.primary
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            textAlign = TextAlign.End,
+                                                            modifier = Modifier.weight(1f, fill = false),
+                                                            maxLines = 2
                                                         )
                                                     }
                                                 }

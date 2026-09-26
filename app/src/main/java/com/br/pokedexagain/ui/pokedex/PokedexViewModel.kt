@@ -2,7 +2,6 @@ package com.br.pokedexagain.ui.pokedex
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.br.pokedexagain.domain.model.PokemonListItem
 import com.br.pokedexagain.domain.usecase.GetPokemonListUseCase
 import com.br.pokedexagain.domain.usecase.SearchPokemonUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +28,9 @@ class PokedexViewModel @Inject constructor(
     private val _selectedTypeFilter = MutableStateFlow<String?>(null)
     val selectedTypeFilter: StateFlow<String?> = _selectedTypeFilter.asStateFlow()
 
+    private val _selectedGenerationFilter = MutableStateFlow<Int?>(null)
+    val selectedGenerationFilter: StateFlow<Int?> = _selectedGenerationFilter.asStateFlow()
+
     init {
         loadPokemon()
         observeSearchAndFilter()
@@ -37,7 +39,7 @@ class PokedexViewModel @Inject constructor(
     fun loadPokemon() {
         viewModelScope.launch {
             _uiState.value = PokedexUiState.Loading
-            executeSearchOrGetList(_searchQuery.value, _selectedTypeFilter.value)
+            executeSearchOrGetList(_searchQuery.value, _selectedTypeFilter.value, _selectedGenerationFilter.value)
         }
     }
 
@@ -53,6 +55,14 @@ class PokedexViewModel @Inject constructor(
         }
     }
 
+    fun onGenerationFilterSelected(generationId: Int?) {
+        if (_selectedGenerationFilter.value == generationId) {
+            _selectedGenerationFilter.value = null
+        } else {
+            _selectedGenerationFilter.value = generationId
+        }
+    }
+
     fun clearSearchQuery() {
         _searchQuery.value = ""
     }
@@ -63,19 +73,19 @@ class PokedexViewModel @Inject constructor(
 
     private fun observeSearchAndFilter() {
         viewModelScope.launch {
-            combine(_searchQuery, _selectedTypeFilter) { query, type ->
-                Pair(query, type)
-            }.collectLatest { (query, type) ->
-                executeSearchOrGetList(query, type)
+            combine(_searchQuery, _selectedTypeFilter, _selectedGenerationFilter) { query, type, generation ->
+                Triple(query, type, generation)
+            }.collectLatest { (query, type, generation) ->
+                executeSearchOrGetList(query, type, generation)
             }
         }
     }
 
-    private suspend fun executeSearchOrGetList(query: String, typeFilter: String?) {
-        val result = if (query.isBlank() && typeFilter.isNullOrBlank()) {
-            getPokemonListUseCase(limit = 151, offset = 0)
+    private suspend fun executeSearchOrGetList(query: String, typeFilter: String?, generationFilter: Int?) {
+        val result = if (query.isBlank() && typeFilter.isNullOrBlank() && generationFilter == null) {
+            getPokemonListUseCase(limit = 1302, offset = 0)
         } else {
-            searchPokemonUseCase(query = query, typeFilter = typeFilter)
+            searchPokemonUseCase(query = query, typeFilter = typeFilter, generationFilter = generationFilter)
         }
 
         result.fold(

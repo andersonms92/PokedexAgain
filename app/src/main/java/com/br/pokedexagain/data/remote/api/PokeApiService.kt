@@ -1,5 +1,6 @@
 package com.br.pokedexagain.data.remote.api
 
+import com.br.pokedexagain.data.remote.dto.GenerationDto
 import com.br.pokedexagain.data.remote.dto.PokemonDetailDto
 import com.br.pokedexagain.data.remote.dto.PokemonListResponseDto
 import com.br.pokedexagain.data.remote.dto.PokemonLocationEncounterDto
@@ -12,9 +13,14 @@ interface PokeApiService {
 
     @GET("pokemon")
     suspend fun getPokemonList(
-        @Query("limit") limit: Int = 100,
+        @Query("limit") limit: Int = 1302,
         @Query("offset") offset: Int = 0
     ): PokemonListResponseDto
+
+    @GET("generation/{id}")
+    suspend fun getGeneration(
+        @Path("id") id: Int
+    ): GenerationDto
 
     @GET("pokemon/{idOrName}")
     suspend fun getPokemonDetail(

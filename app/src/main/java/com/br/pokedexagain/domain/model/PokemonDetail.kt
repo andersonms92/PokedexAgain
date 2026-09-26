@@ -9,5 +9,7 @@ data class PokemonDetail(
     val weightInKg: Double,
     val types: List<String>,
     val abilities: List<String>,
-    val stats: PokemonStats
+    val stats: PokemonStats,
+    val generation: Int = 1,
+    val generationName: String = "Gen 1 (Kanto)"
 )

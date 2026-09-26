@@ -1,6 +1,6 @@
 package com.br.pokedexagain.ui.pokedex
 
-import androidx.lifecycle.SavedStateHandle
+import com.br.pokedexagain.PokemonDetailKey
 import com.br.pokedexagain.domain.model.PokemonDetail
 import com.br.pokedexagain.domain.model.PokemonLocationEncounter
 import com.br.pokedexagain.domain.model.PokemonSpeciesInfo
@@ -72,12 +72,12 @@ class PokemonDetailViewModelTest {
 
     @Test
     fun init_loadsPokemonDetailSuccessfully() = runTest {
-        val savedStateHandle = SavedStateHandle(mapOf("pokemonId" to 1, "pokemonName" to "Bulbasaur"))
+        val navKey = PokemonDetailKey(pokemonId = 1, pokemonName = "Bulbasaur")
         viewModel = PokemonDetailViewModel(
             getPokemonDetailUseCase,
             getPokemonSpeciesUseCase,
             getPokemonLocationEncountersUseCase,
-            savedStateHandle
+            navKey
         )
 
         val state = viewModel.uiState.value
@@ -93,12 +93,12 @@ class PokemonDetailViewModelTest {
     fun loadPokemonData_failure_updatesUiStateToError() = runTest {
         whenever(repository.getPokemonDetail("1")).thenReturn(Result.failure(RuntimeException("Not found")))
 
-        val savedStateHandle = SavedStateHandle(mapOf("pokemonId" to 1))
+        val navKey = PokemonDetailKey(pokemonId = 1, pokemonName = "Bulbasaur")
         viewModel = PokemonDetailViewModel(
             getPokemonDetailUseCase,
             getPokemonSpeciesUseCase,
             getPokemonLocationEncountersUseCase,
-            savedStateHandle
+            navKey
         )
 
         val state = viewModel.uiState.value

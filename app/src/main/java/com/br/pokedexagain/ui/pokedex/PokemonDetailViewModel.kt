@@ -1,35 +1,34 @@
 package com.br.pokedexagain.ui.pokedex
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.br.pokedexagain.PokemonDetailKey
 import com.br.pokedexagain.domain.usecase.GetPokemonDetailUseCase
 import com.br.pokedexagain.domain.usecase.GetPokemonLocationEncountersUseCase
 import com.br.pokedexagain.domain.usecase.GetPokemonSpeciesUseCase
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class PokemonDetailViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = PokemonDetailViewModel.Factory::class)
+class PokemonDetailViewModel @AssistedInject constructor(
     private val getPokemonDetailUseCase: GetPokemonDetailUseCase,
     private val getPokemonSpeciesUseCase: GetPokemonSpeciesUseCase,
     private val getPokemonLocationEncountersUseCase: GetPokemonLocationEncountersUseCase,
-    savedStateHandle: SavedStateHandle
+    @Assisted private val navKey: PokemonDetailKey
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
 
-    private val pokemonId: Int = savedStateHandle.get<Int>("pokemonId") ?: 1
-    private val pokemonName: String = savedStateHandle.get<String>("pokemonName") ?: pokemonId.toString()
-
     init {
-        loadPokemonData(pokemonId.toString())
+        loadPokemonData(navKey.pokemonId.toString())
     }
 
     fun loadPokemonData(idOrName: String) {
@@ -64,6 +63,11 @@ class PokemonDetailViewModel @Inject constructor(
     }
 
     fun retry() {
-        loadPokemonData(pokemonId.toString())
+        loadPokemonData(navKey.pokemonId.toString())
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: PokemonDetailKey): PokemonDetailViewModel
     }
 }

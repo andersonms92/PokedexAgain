@@ -39,6 +39,7 @@ class PokemonMapperTest {
         assertEquals(25, domain.id)
         assertEquals("Pikachu", domain.name)
         assertTrue(domain.imageUrl.contains("25.png"))
+        assertEquals(listOf("Electric"), domain.types)
     }
 
     @Test

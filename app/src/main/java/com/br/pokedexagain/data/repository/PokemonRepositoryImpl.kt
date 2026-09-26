@@ -30,6 +30,17 @@ class PokemonRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getGenerationPokemon(generationId: Int): Result<List<PokemonListItem>> {
+        return runCatching {
+            val allList = if (cachedList.isEmpty()) {
+                getPokemonList(limit = 1302, offset = 0).getOrDefault(emptyList())
+            } else {
+                cachedList
+            }
+            allList.filter { it.generation == generationId }
+        }
+    }
+
     override suspend fun getPokemonDetail(idOrName: String): Result<PokemonDetail> {
         return runCatching {
             val detailDto = apiService.getPokemonDetail(idOrName.lowercase().trim())
@@ -51,11 +62,11 @@ class PokemonRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchPokemon(query: String, typeFilter: String?): Result<List<PokemonListItem>> {
+    override suspend fun searchPokemon(query: String, typeFilter: String?, generationFilter: Int?): Result<List<PokemonListItem>> {
         return runCatching {
             val cleanQuery = query.lowercase().trim()
             val listToFilter = if (cachedList.isEmpty()) {
-                getPokemonList(limit = 151, offset = 0).getOrDefault(emptyList())
+                getPokemonList(limit = 1302, offset = 0).getOrDefault(emptyList())
             } else {
                 cachedList
             }
@@ -73,6 +84,12 @@ class PokemonRepositoryImpl @Inject constructor(
                 val cleanType = typeFilter.lowercase().trim()
                 filtered = filtered.filter { pokemon ->
                     pokemon.types.any { it.lowercase() == cleanType }
+                }
+            }
+
+            if (generationFilter != null) {
+                filtered = filtered.filter { pokemon ->
+                    pokemon.generation == generationFilter
                 }
             }
 

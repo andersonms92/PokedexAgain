@@ -6,23 +6,26 @@ import com.br.pokedexagain.data.remote.dto.PokemonLocationEncounterDto
 import com.br.pokedexagain.data.remote.dto.PokemonSpeciesDto
 import com.br.pokedexagain.data.remote.dto.PokemonStatDto
 import com.br.pokedexagain.domain.model.PokemonDetail
+import com.br.pokedexagain.domain.model.PokemonGeneration
 import com.br.pokedexagain.domain.model.PokemonListItem
 import com.br.pokedexagain.domain.model.PokemonLocationEncounter
 import com.br.pokedexagain.domain.model.PokemonSpeciesInfo
 import com.br.pokedexagain.domain.model.PokemonStats
-
 import com.br.pokedexagain.ui.util.PokemonTypeUtils
 
 fun PokemonListItemDto.toDomain(): PokemonListItem {
     val id = extractPokemonIdFromUrl(url)
     val formattedName = name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"
-    val types = PokemonTypeUtils.getTypesForPokemon(id, name)
+    val types = PokemonTypeUtils.getTypesForPokemon(id)
+    val generationObj = PokemonGeneration.fromId(id)
     return PokemonListItem(
         id = id,
         name = formattedName,
         imageUrl = imageUrl,
-        types = types
+        types = types,
+        generation = generationObj.id,
+        generationName = generationObj.title
     )
 }
 
@@ -51,6 +54,8 @@ fun PokemonDetailDto.toDomain(): PokemonDetail {
             .joinToString(" ") { word -> word.replaceFirstChar { c -> if (c.isLowerCase()) c.titlecase() else c.toString() } }
     } ?: emptyList()
 
+    val generationObj = PokemonGeneration.fromId(id)
+
     return PokemonDetail(
         id = id,
         name = formattedName,
@@ -60,7 +65,9 @@ fun PokemonDetailDto.toDomain(): PokemonDetail {
         weightInKg = weight / 10.0,
         types = typeList,
         abilities = abilityList,
-        stats = extractPokemonStats(stats)
+        stats = extractPokemonStats(stats),
+        generation = generationObj.id,
+        generationName = generationObj.title
     )
 }
 

@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CatchingPokemon
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Button
@@ -27,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.br.pokedexagain.domain.model.PokemonListItem
+import com.br.pokedexagain.ui.pokedex.components.GenerationFilterChips
 import com.br.pokedexagain.ui.pokedex.components.PokedexSearchBar
 import com.br.pokedexagain.ui.pokedex.components.PokemonCard
 import com.br.pokedexagain.ui.pokedex.components.TypeFilterChips
@@ -50,14 +49,17 @@ fun PokedexScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedTypeFilter by viewModel.selectedTypeFilter.collectAsStateWithLifecycle()
+    val selectedGenerationFilter by viewModel.selectedGenerationFilter.collectAsStateWithLifecycle()
 
     PokedexScreenContent(
         uiState = uiState,
         searchQuery = searchQuery,
         selectedTypeFilter = selectedTypeFilter,
+        selectedGenerationFilter = selectedGenerationFilter,
         onSearchQueryChange = viewModel::onSearchQueryChanged,
         onClearSearchQuery = viewModel::clearSearchQuery,
         onTypeFilterSelected = viewModel::onTypeFilterSelected,
+        onGenerationFilterSelected = viewModel::onGenerationFilterSelected,
         onPokemonClick = onPokemonClick,
         onRetry = viewModel::retry,
         modifier = modifier
@@ -69,9 +71,11 @@ fun PokedexScreenContent(
     uiState: PokedexUiState,
     searchQuery: String,
     selectedTypeFilter: String?,
+    selectedGenerationFilter: Int?,
     onSearchQueryChange: (String) -> Unit,
     onClearSearchQuery: () -> Unit,
     onTypeFilterSelected: (String?) -> Unit,
+    onGenerationFilterSelected: (Int?) -> Unit,
     onPokemonClick: (PokemonListItem) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
@@ -112,6 +116,13 @@ fun PokedexScreenContent(
                 onQueryChange = onSearchQueryChange,
                 onClearQuery = onClearSearchQuery,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            // Generation Filter Chips
+            GenerationFilterChips(
+                selectedGeneration = selectedGenerationFilter,
+                onGenerationSelected = onGenerationFilterSelected,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Type Filter Chips
@@ -246,9 +257,11 @@ fun PokedexScreenPreview() {
             ),
             searchQuery = "",
             selectedTypeFilter = null,
+            selectedGenerationFilter = null,
             onSearchQueryChange = {},
             onClearSearchQuery = {},
             onTypeFilterSelected = {},
+            onGenerationFilterSelected = {},
             onPokemonClick = {},
             onRetry = {}
         )

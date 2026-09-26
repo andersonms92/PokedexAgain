@@ -7,7 +7,7 @@ import javax.inject.Inject
 class SearchPokemonUseCase @Inject constructor(
     private val repository: PokemonRepository
 ) {
-    suspend operator fun invoke(query: String, typeFilter: String? = null): Result<List<PokemonListItem>> {
-        return repository.searchPokemon(query, typeFilter)
+    suspend operator fun invoke(query: String, typeFilter: String? = null, generationFilter: Int? = null): Result<List<PokemonListItem>> {
+        return repository.searchPokemon(query, typeFilter, generationFilter)
     }
 }

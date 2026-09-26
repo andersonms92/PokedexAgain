@@ -29,10 +29,11 @@ class PokedexViewModelTest {
     private lateinit var viewModel: PokedexViewModel
 
     private val samplePokemonList = listOf(
-        PokemonListItem(1, "Bulbasaur", "http://example.com/1.png", listOf("Grass", "Poison")),
-        PokemonListItem(4, "Charmander", "http://example.com/4.png", listOf("Fire")),
-        PokemonListItem(7, "Squirtle", "http://example.com/7.png", listOf("Water")),
-        PokemonListItem(25, "Pikachu", "http://example.com/25.png", listOf("Electric"))
+        PokemonListItem(1, "Bulbasaur", "http://example.com/1.png", listOf("Grass", "Poison"), 1, "Gen 1 (Kanto)"),
+        PokemonListItem(4, "Charmander", "http://example.com/4.png", listOf("Fire"), 1, "Gen 1 (Kanto)"),
+        PokemonListItem(7, "Squirtle", "http://example.com/7.png", listOf("Water"), 1, "Gen 1 (Kanto)"),
+        PokemonListItem(25, "Pikachu", "http://example.com/25.png", listOf("Electric"), 1, "Gen 1 (Kanto)"),
+        PokemonListItem(152, "Chikorita", "http://example.com/152.png", listOf("Grass"), 2, "Gen 2 (Johto)")
     )
 
     @Before
@@ -41,7 +42,7 @@ class PokedexViewModelTest {
         getPokemonListUseCase = GetPokemonListUseCase(repository)
         searchPokemonUseCase = SearchPokemonUseCase(repository)
 
-        whenever(repository.getPokemonList(151, 0)).thenReturn(Result.success(samplePokemonList))
+        whenever(repository.getPokemonList(1302, 0)).thenReturn(Result.success(samplePokemonList))
     }
 
     @Test
@@ -51,14 +52,14 @@ class PokedexViewModelTest {
         val state = viewModel.uiState.value
         assertTrue(state is PokedexUiState.Success)
         val successState = state as PokedexUiState.Success
-        assertEquals(4, successState.pokemonList.size)
+        assertEquals(5, successState.pokemonList.size)
         assertEquals("Bulbasaur", successState.pokemonList[0].name)
     }
 
     @Test
     fun onSearchQueryChanged_filtersPokemonByName() = runTest {
         val filtered = listOf(samplePokemonList[0]) // Bulbasaur
-        whenever(repository.searchPokemon(eq("Bulba"), eq(null))).thenReturn(Result.success(filtered))
+        whenever(repository.searchPokemon(eq("Bulba"), eq(null), eq(null))).thenReturn(Result.success(filtered))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
         viewModel.onSearchQueryChanged("Bulba")
@@ -74,7 +75,7 @@ class PokedexViewModelTest {
     @Test
     fun onSearchQueryChanged_filtersPokemonByPokedexNumber() = runTest {
         val filtered = listOf(samplePokemonList[1]) // Charmander (#4)
-        whenever(repository.searchPokemon(eq("4"), eq(null))).thenReturn(Result.success(filtered))
+        whenever(repository.searchPokemon(eq("4"), eq(null), eq(null))).thenReturn(Result.success(filtered))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
         viewModel.onSearchQueryChanged("4")
@@ -90,7 +91,7 @@ class PokedexViewModelTest {
     @Test
     fun onTypeFilterSelected_filtersPokemonByType() = runTest {
         val filtered = listOf(samplePokemonList[2]) // Squirtle
-        whenever(repository.searchPokemon(eq(""), eq("Water"))).thenReturn(Result.success(filtered))
+        whenever(repository.searchPokemon(eq(""), eq("Water"), eq(null))).thenReturn(Result.success(filtered))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
         viewModel.onTypeFilterSelected("Water")
@@ -104,8 +105,24 @@ class PokedexViewModelTest {
     }
 
     @Test
+    fun onGenerationFilterSelected_filtersPokemonByGeneration() = runTest {
+        val filtered = listOf(samplePokemonList[4]) // Chikorita (Gen 2)
+        whenever(repository.searchPokemon(eq(""), eq(null), eq(2))).thenReturn(Result.success(filtered))
+
+        viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
+        viewModel.onGenerationFilterSelected(2)
+
+        assertEquals(2, viewModel.selectedGenerationFilter.value)
+        val state = viewModel.uiState.value
+        assertTrue(state is PokedexUiState.Success)
+        val successState = state as PokedexUiState.Success
+        assertEquals(1, successState.pokemonList.size)
+        assertEquals("Chikorita", successState.pokemonList[0].name)
+    }
+
+    @Test
     fun onTypeFilterSelected_togglesSelectionWhenClickedAgain() = runTest {
-        whenever(repository.searchPokemon(eq(""), eq("Fire"))).thenReturn(Result.success(listOf(samplePokemonList[1])))
+        whenever(repository.searchPokemon(eq(""), eq("Fire"), eq(null))).thenReturn(Result.success(listOf(samplePokemonList[1])))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
         viewModel.onTypeFilterSelected("Fire")
@@ -117,7 +134,7 @@ class PokedexViewModelTest {
 
     @Test
     fun clearSearchQuery_resetsSearchQueryText() = runTest {
-        whenever(repository.searchPokemon(eq("Pika"), eq(null))).thenReturn(Result.success(listOf(samplePokemonList[3])))
+        whenever(repository.searchPokemon(eq("Pika"), eq(null), eq(null))).thenReturn(Result.success(listOf(samplePokemonList[3])))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
         viewModel.onSearchQueryChanged("Pika")
@@ -129,7 +146,7 @@ class PokedexViewModelTest {
 
     @Test
     fun loadPokemon_error_updatesUiStateToError() = runTest {
-        whenever(repository.getPokemonList(151, 0)).thenReturn(Result.failure(RuntimeException("Network failure")))
+        whenever(repository.getPokemonList(1302, 0)).thenReturn(Result.failure(RuntimeException("Network failure")))
 
         viewModel = PokedexViewModel(getPokemonListUseCase, searchPokemonUseCase)
 
