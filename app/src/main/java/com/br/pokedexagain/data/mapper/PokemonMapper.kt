@@ -1,5 +1,6 @@
 package com.br.pokedexagain.data.mapper
 
+import android.util.Log
 import com.br.pokedexagain.data.remote.dto.PokemonDetailDto
 import com.br.pokedexagain.data.remote.dto.PokemonListItemDto
 import com.br.pokedexagain.data.remote.dto.PokemonLocationEncounterDto
@@ -11,13 +12,11 @@ import com.br.pokedexagain.domain.model.PokemonListItem
 import com.br.pokedexagain.domain.model.PokemonLocationEncounter
 import com.br.pokedexagain.domain.model.PokemonSpeciesInfo
 import com.br.pokedexagain.domain.model.PokemonStats
-import com.br.pokedexagain.ui.util.PokemonTypeUtils
 
-fun PokemonListItemDto.toDomain(): PokemonListItem {
+fun PokemonListItemDto.toDomain(types: List<String> = emptyList()): PokemonListItem {
     val id = extractPokemonIdFromUrl(url)
     val formattedName = name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"
-    val types = PokemonTypeUtils.getTypesForPokemon(id)
     val generationObj = PokemonGeneration.fromId(id)
     return PokemonListItem(
         id = id,
@@ -34,7 +33,7 @@ fun extractPokemonIdFromUrl(url: String): Int {
         val trimmed = url.trimEnd('/')
         trimmed.substringAfterLast('/').toInt()
     } catch (e: Exception) {
-        0
+       Log.e("Exception", e.toString())
     }
 }
 

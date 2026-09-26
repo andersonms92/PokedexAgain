@@ -1,5 +1,6 @@
 package com.br.pokedexagain.data.repository
 
+import com.br.pokedexagain.data.mapper.extractPokemonIdFromUrl
 import com.br.pokedexagain.data.mapper.toDomain
 import com.br.pokedexagain.data.remote.api.PokeApiService
 import com.br.pokedexagain.domain.model.PokemonDetail
@@ -7,6 +8,9 @@ import com.br.pokedexagain.domain.model.PokemonListItem
 import com.br.pokedexagain.domain.model.PokemonLocationEncounter
 import com.br.pokedexagain.domain.model.PokemonSpeciesInfo
 import com.br.pokedexagain.domain.repository.PokemonRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,7 +24,18 @@ class PokemonRepositoryImpl @Inject constructor(
     override suspend fun getPokemonList(limit: Int, offset: Int): Result<List<PokemonListItem>> {
         return runCatching {
             val response = apiService.getPokemonList(limit, offset)
-            val domainList = response.results.map { it.toDomain() }
+            val domainList = coroutineScope {
+                response.results.map { itemDto ->
+                    async {
+                        val id = extractPokemonIdFromUrl(itemDto.url)
+                        val detailDto = runCatching { apiService.getPokemonDetail(id.toString()) }.getOrNull()
+                        val types = detailDto?.types?.sortedBy { it.slot }?.map {
+                            it.type.name.replaceFirstChar { c -> if (c.isLowerCase()) c.titlecase() else c.toString() }
+                        } ?: emptyList()
+                        itemDto.toDomain(types = types)
+                    }
+                }.awaitAll()
+            }
             if (offset == 0) {
                 cachedList = domainList
             } else {

@@ -19,13 +19,19 @@ import androidx.compose.ui.unit.dp
 import com.br.pokedexagain.ui.theme.PokedexAgainTheme
 import com.br.pokedexagain.ui.util.PokemonTypeUtils
 
+private val POKEMON_TYPES = listOf(
+    "Grass", "Fire", "Water", "Electric", "Bug", "Poison",
+    "Ground", "Rock", "Psychic", "Ice", "Dragon", "Ghost",
+    "Normal", "Fighting", "Flying", "Steel", "Fairy", "Dark"
+)
+
 @Composable
 fun TypeFilterChips(
     selectedType: String?,
     onTypeSelected: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val types = listOf("All") + PokemonTypeUtils.allTypes
+    val types = listOf("All") + POKEMON_TYPES
 
     LazyRow(
         modifier = modifier,

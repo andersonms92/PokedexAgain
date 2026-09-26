@@ -34,7 +34,7 @@ class PokemonMapperTest {
             name = "pikachu",
             url = "https://pokeapi.co/api/v2/pokemon/25/"
         )
-        val domain = dto.toDomain()
+        val domain = dto.toDomain(types = listOf("Electric"))
 
         assertEquals(25, domain.id)
         assertEquals("Pikachu", domain.name)
